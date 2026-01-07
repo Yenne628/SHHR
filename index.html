@@ -2,44 +2,42 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>자타 입니당</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>성훈하린 자타</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="outer-border">
         <div class="browser-frame">
             <header class="frame-header">
-                <div class="address-bar">성훈하린 자타 </div>
+                <div class="address-bar">💜 성훈하린 자타 </div>
             </header>
 
             <div class="main-layout">
                 <nav class="side-bar">
                     <div class="profile-section">
-                        <div class="profile-container">
-                            <div class="profile-img" id="profileDisplay"></div>
-                        </div>
+                        <div class="profile-img" id="profileDisplay"></div>
                         <p class="profile-text">서하린</p>
-                        <p class="sub-text">재미있게 봐주세요!</p>
+                        <p class="sub-text">우리들의 소중한 기록</p>
                     </div>
                     
                     <div class="login-section">
                         <div id="loginInputArea" class="auth-group">
-                            <input type="password" id="adminPin" placeholder="숫자 6자리" maxlength="6">
-                            <button class="login-btn" onclick="checkLogin()">로그인하기</button>
+                            <input type="password" id="adminPin" inputmode="numeric" placeholder="숫자 6자리" maxlength="6">
+                            <button class="login-btn" onclick="checkLogin()">로그인</button>
                         </div>
                         <div id="loginSuccessArea" class="auth-group" style="display:none;">
-                            <p class="status-msg"> ꤶ 로그인 완료 </p>
-                            <button class="login-btn logout" onclick="handleLogout()">로그아웃</button>
+                            <p class="status-msg">✅ 로그인 중</p>
+                            <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
                         </div>
                     </div>
                 </nav>
 
                 <main class="calendar-content">
                     <div class="calendar-header">
-                        <button class="nav-btn" onclick="changeMonth(-1)">◀ 이전 달</button>
+                        <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
                         <h1 id="monthDisplay"></h1>
-                        <button class="nav-btn" onclick="changeMonth(1)">다음 달 ▶</button>
+                        <button class="nav-btn" onclick="changeMonth(1)">▶</button>
                     </div>
                     <div id="calendar" class="calendar-grid"></div>
                 </main>
@@ -47,39 +45,13 @@
         </div>
     </div>
 
-    <div id="modal" class="modal-overlay">
+    <div id="modal" class="modal-overlay" onclick="handleOverlayClick(event)">
         <div class="modal-content">
             <div id="viewMode">
                 <h3 id="viewDate"></h3>
                 <div id="imageContainer" class="modal-img-container"></div>
                 <p id="viewText" class="modal-text-view"></p>
                 <div class="modal-buttons">
-                    <div id="adminButtons" style="display:none; display: inline-flex; gap: 10px;">
-                        <button onclick="toggleEditMode(true)" class="edit-btn">기록/수정하기</button>
-                        <button onclick="deleteData()" class="del-btn">삭제</button>
-                    </div>
-                    <button onclick="closeModal()" class="close-btn">닫기</button>
-                </div>
-            </div>
-            
-            <div id="editMode" style="display:none;">
-                <h3 id="editDateDisplay"></h3>
-                <div class="input-group">
-                    <label>사진 (여러 장 선택 가능)</label>
-                    <input type="file" id="imageInput" accept="image/*" class="modal-input" multiple>
-                </div>
-                <div class="input-group">
-                    <label>오늘의 기록</label>
-                    <textarea id="textInput" placeholder="이날의 소중한 추억을 남겨주세요..."></textarea>
-                </div>
-                <div class="modal-buttons">
-                    <button onclick="saveData()" class="save-btn">저장</button>
-                    <button onclick="toggleEditMode(false)" class="cancel-btn">취소</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+                    <div id="adminButtons" style="display:none;">
+                        <button onclick="toggleEditMode(true)" class="edit-btn">기록/수정</button>
+                        <button onclick
