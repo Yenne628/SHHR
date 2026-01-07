@@ -1,20 +1,13 @@
-// --- [중요: 프로필 사진 링크 설정] ---
-// 아래 큰따옴표("") 사이에 원하는 사진의 인터넷 주소를 넣으세요.
 const PROFILE_IMAGE_URL = "https://cdn.discordapp.com/attachments/1454043761205186602/1458521421356601600/E142D088-C78C-4B51-825E-9B060493CF55.png?ex=695ff16c&is=695e9fec&hm=76a24d4d2716b40fe1bef0ecfbe590f6aec62bad5c6b43b5ca4ecc4b24e3bafd&"; 
+const ADMIN_PIN = "242628";
 
 let currentViewDate = new Date();
 let selectedDate = null;
-const ADMIN_PIN = "242628"; // 로그인 인증번호
 let isLoggedIn = localStorage.getItem('calendarLogin') === 'true';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 동그라미 프로필 사진 설정
     const profileImg = document.getElementById('profileDisplay');
-    if (PROFILE_IMAGE_URL && PROFILE_IMAGE_URL.startsWith("http")) {
-        profileImg.style.backgroundImage = `url('${PROFILE_IMAGE_URL}')`;
-    } else {
-        profileImg.style.backgroundColor = "#ddd"; // 링크 없을 때 회색
-    }
+    if (PROFILE_IMAGE_URL) profileImg.style.backgroundImage = `url('${PROFILE_IMAGE_URL}')`;
     updateUI();
 });
 
@@ -30,18 +23,19 @@ function checkLogin() {
         isLoggedIn = true;
         localStorage.setItem('calendarLogin', 'true');
         updateUI();
-    } else { alert("비밀번호가 틀렸습니다."); }
+    } else { alert("비밀번호를 확인해주세요."); }
 }
 
 function handleLogout() {
-    isLoggedIn = false;
-    localStorage.removeItem('calendarLogin');
-    updateUI();
+    if(confirm("로그아웃 하시겠습니까?")) {
+        isLoggedIn = false;
+        localStorage.removeItem('calendarLogin');
+        updateUI();
+    }
 }
 
 function renderCalendar() {
     const calendar = document.getElementById('calendar');
-    if(!calendar) return;
     calendar.innerHTML = '';
     const year = currentViewDate.getFullYear();
     const month = currentViewDate.getMonth();
@@ -50,7 +44,9 @@ function renderCalendar() {
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
-    for (let i = 0; i < firstDay; i++) calendar.appendChild(document.createElement('div'));
+    for (let i = 0; i < firstDay; i++) {
+        calendar.appendChild(document.createElement('div'));
+    }
 
     for (let i = 1; i <= lastDate; i++) {
         const dateKey = `${year}-${month + 1}-${i}`;
@@ -73,6 +69,7 @@ function openModal(date) {
     document.getElementById('viewDate').innerText = date;
     const imgContainer = document.getElementById('imageContainer');
     imgContainer.innerHTML = '';
+    
     if (saved && saved.imgs) {
         saved.imgs.forEach(src => {
             const img = document.createElement('img');
@@ -86,11 +83,24 @@ function openModal(date) {
     document.getElementById('modal').style.display = 'flex';
 }
 
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+}
+
+function handleOverlayClick(e) {
+    if (e.target.id === 'modal') closeModal();
+}
+
 async function saveData() {
     const fileInput = document.getElementById('imageInput');
     const text = document.getElementById('textInput').value;
-    const files = Array.from(fileInput.files);
+    const btn = document.getElementById('saveBtn');
+    
+    btn.innerText = "저장 중...";
+    btn.disabled = true;
+
     let imgArray = [];
+    const files = Array.from(fileInput.files);
 
     if (files.length > 0) {
         const readFiles = files.map(file => new Promise(resolve => {
@@ -103,25 +113,38 @@ async function saveData() {
         const saved = JSON.parse(localStorage.getItem(selectedDate));
         imgArray = saved ? saved.imgs : [];
     }
-    localStorage.setItem(selectedDate, JSON.stringify({ imgs: imgArray, text: text }));
-    renderCalendar(); closeModal();
-}
 
-function deleteData() {
-    if (confirm("삭제할까요?")) {
-        localStorage.removeItem(selectedDate);
-        renderCalendar(); closeModal();
+    try {
+        localStorage.setItem(selectedDate, JSON.stringify({ imgs: imgArray, text: text }));
+        renderCalendar();
+        closeModal();
+    } catch (e) {
+        alert("저장 용량이 초과되었습니다. 사진 수를 줄여주세요!");
+    } finally {
+        btn.innerText = "저장하기";
+        btn.disabled = false;
     }
 }
 
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
-function changeMonth(diff) { currentViewDate.setMonth(currentViewDate.getMonth() + diff); renderCalendar(); }
+function deleteData() {
+    if (confirm("기록을 삭제할까요?")) {
+        localStorage.removeItem(selectedDate);
+        renderCalendar();
+        closeModal();
+    }
+}
+
+function changeMonth(diff) {
+    currentViewDate.setMonth(currentViewDate.getMonth() + diff);
+    renderCalendar();
+}
+
 function toggleEditMode(isEdit) {
     document.getElementById('viewMode').style.display = isEdit ? 'none' : 'block';
     document.getElementById('editMode').style.display = isEdit ? 'block' : 'none';
     if(isEdit) {
         const saved = JSON.parse(localStorage.getItem(selectedDate));
         document.getElementById('textInput').value = saved ? saved.text : "";
-        document.getElementById('editDateDisplay').innerText = selectedDate + " 기록하기";
+        document.getElementById('editDateDisplay').innerText = selectedDate + " 기록";
     }
 }
