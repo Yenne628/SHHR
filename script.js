@@ -1,127 +1,83 @@
-// --- [중요: 프로필 사진 링크 설정] ---
-// 아래 큰따옴표("") 사이에 원하는 사진의 인터넷 주소를 넣으세요.
-const PROFILE_IMAGE_URL = "https://cdn.discordapp.com/attachments/1454043761205186602/1458521421356601600/E142D088-C78C-4B51-825E-9B060493CF55.png?ex=695ff16c&is=695e9fec&hm=76a24d4d2716b40fe1bef0ecfbe590f6aec62bad5c6b43b5ca4ecc4b24e3bafd&"; 
-
-let currentViewDate = new Date();
-let selectedDate = null;
-const ADMIN_PIN = "242628"; // 로그인 인증번호
-let isLoggedIn = localStorage.getItem('calendarLogin') === 'true';
-
-document.addEventListener('DOMContentLoaded', () => {
-    // 동그라미 프로필 사진 설정
-    const profileImg = document.getElementById('profileDisplay');
-    if (PROFILE_IMAGE_URL && PROFILE_IMAGE_URL.startsWith("http")) {
-        profileImg.style.backgroundImage = `url('${PROFILE_IMAGE_URL}')`;
-    } else {
-        profileImg.style.backgroundColor = "#ddd"; // 링크 없을 때 회색
-    }
-    updateUI();
-});
-
-function updateUI() {
-    document.getElementById('loginInputArea').style.display = isLoggedIn ? 'none' : 'flex';
-    document.getElementById('loginSuccessArea').style.display = isLoggedIn ? 'flex' : 'none';
-    renderCalendar();
+:root {
+    --main-purple: #9b59b6;
+    --light-purple: #f8f0fb;
 }
 
-function checkLogin() {
-    const pin = document.getElementById('adminPin').value;
-    if (pin === ADMIN_PIN) {
-        isLoggedIn = true;
-        localStorage.setItem('calendarLogin', 'true');
-        updateUI();
-    } else { alert("비밀번호가 틀렸습니다."); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { width: 100%; height: 100%; font-family: sans-serif; overflow: hidden; position: fixed; }
+
+.outer-border { 
+    width: 100vw; height: 100vh; padding: 15px; 
+    background-color: var(--main-purple); 
+    display: flex; justify-content: center; align-items: center;
 }
 
-function handleLogout() {
-    isLoggedIn = false;
-    localStorage.removeItem('calendarLogin');
-    updateUI();
+.browser-frame { 
+    width: 100%; height: 100%; background: white; border-radius: 15px; 
+    display: flex; flex-direction: column; overflow: hidden; 
 }
 
-function renderCalendar() {
-    const calendar = document.getElementById('calendar');
-    if(!calendar) return;
-    calendar.innerHTML = '';
-    const year = currentViewDate.getFullYear();
-    const month = currentViewDate.getMonth();
-    document.getElementById('monthDisplay').innerText = `${year}년 ${month + 1}월`;
+.frame-header { height: 40px; background: #fff; border-bottom: 1px solid var(--light-purple); display: flex; align-items: center; padding: 0 15px; flex-shrink: 0; }
+.address-bar { background: var(--light-purple); width: 200px; height: 22px; border-radius: 11px; font-size: 11px; display: flex; align-items: center; padding-left: 10px; color: var(--main-purple); font-weight: bold; }
 
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
+.main-layout { display: flex; flex: 1; height: calc(100% - 40px); overflow: hidden; }
 
-    for (let i = 0; i < firstDay; i++) calendar.appendChild(document.createElement('div'));
-
-    for (let i = 1; i <= lastDate; i++) {
-        const dateKey = `${year}-${month + 1}-${i}`;
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        cell.innerHTML = `<span class="day-number">${i}</span>`;
-        
-        const saved = JSON.parse(localStorage.getItem(dateKey));
-        if (saved && saved.imgs && saved.imgs[0]) {
-            cell.style.backgroundImage = `url(${saved.imgs[0]})`;
-        }
-        cell.onclick = () => openModal(dateKey);
-        calendar.appendChild(cell);
-    }
+/* 사이드바 */
+.side-bar { width: 230px; background: var(--light-purple); display: flex; flex-direction: column; align-items: center; padding: 30px 15px; border-right: 1.5px solid var(--main-purple); flex-shrink: 0; }
+.profile-img { 
+    width: 110px; height: 110px; background: #fff; border-radius: 50%; 
+    border: 4px solid var(--main-purple); background-size: cover; background-position: center; 
+    margin-bottom: 15px; 
 }
+.profile-text { font-size: 1.3rem; font-weight: bold; color: var(--main-purple); margin-bottom: 5px; }
+.sub-text { font-size: 0.85rem; color: #777; text-align: center; }
 
-function openModal(date) {
-    selectedDate = date;
-    const saved = JSON.parse(localStorage.getItem(date));
-    document.getElementById('viewDate').innerText = date;
-    const imgContainer = document.getElementById('imageContainer');
-    imgContainer.innerHTML = '';
-    if (saved && saved.imgs) {
-        saved.imgs.forEach(src => {
-            const img = document.createElement('img');
-            img.src = src;
-            imgContainer.appendChild(img);
-        });
-    }
-    document.getElementById('viewText').innerText = saved ? saved.text : "기록이 없습니다.";
-    document.getElementById('adminButtons').style.display = isLoggedIn ? 'inline-flex' : 'none';
-    toggleEditMode(false);
-    document.getElementById('modal').style.display = 'flex';
+.auth-group { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 20px; }
+#adminPin { width: 100%; padding: 12px; border: 2px solid var(--main-purple); border-radius: 10px; text-align: center; }
+.login-btn { padding: 12px; background: var(--main-purple); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+
+/* 달력 최적화 */
+.calendar-content { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; background: #fff; overflow-y: auto; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 800px; margin-bottom: 15px; }
+.calendar-header h1 { color: var(--main-purple); font-size: 1.6rem; }
+.nav-btn { padding: 8px 15px; background: var(--main-purple); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+
+.calendar-grid { 
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; 
+    width: 100%; max-width: 800px; min-height: 450px;
 }
-
-async function saveData() {
-    const fileInput = document.getElementById('imageInput');
-    const text = document.getElementById('textInput').value;
-    const files = Array.from(fileInput.files);
-    let imgArray = [];
-
-    if (files.length > 0) {
-        const readFiles = files.map(file => new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.readAsDataURL(file);
-        }));
-        imgArray = await Promise.all(readFiles);
-    } else {
-        const saved = JSON.parse(localStorage.getItem(selectedDate));
-        imgArray = saved ? saved.imgs : [];
-    }
-    localStorage.setItem(selectedDate, JSON.stringify({ imgs: imgArray, text: text }));
-    renderCalendar(); closeModal();
+.day-cell { 
+    background: #fff; border: 1.5px solid var(--light-purple); border-radius: 12px; 
+    aspect-ratio: 1/1; position: relative; cursor: pointer; background-size: cover; background-position: center; 
 }
+.day-number { position: absolute; top: 8px; left: 8px; font-weight: bold; color: var(--main-purple); font-size: 0.9rem; }
 
-function deleteData() {
-    if (confirm("삭제할까요?")) {
-        localStorage.removeItem(selectedDate);
-        renderCalendar(); closeModal();
-    }
+/* 모달 및 버튼 */
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center; }
+.modal-content { background: white; padding: 25px; border-radius: 20px; width: 90%; max-width: 420px; max-height: 85vh; overflow-y: auto; }
+.modal-img-container img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+
+/* 큰 버튼 스타일 */
+.close-btn, .cancel-btn { 
+    padding: 18px 45px !important; 
+    background: #eeeeee; 
+    color: #333; 
+    border: none; 
+    border-radius: 15px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 1.2rem !important;
 }
+.save-btn, .edit-btn { padding: 12px 20px; background: var(--main-purple); color: white; border: none; border-radius: 10px; font-weight: bold; }
+.del-btn { padding: 12px 20px; background: #e74c3c; color: white; border: none; border-radius: 10px; font-weight: bold; }
+.modal-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 15px; align-items: center; }
 
-function closeModal() { document.getElementById('modal').style.display = 'none'; }
-function changeMonth(diff) { currentViewDate.setMonth(currentViewDate.getMonth() + diff); renderCalendar(); }
-function toggleEditMode(isEdit) {
-    document.getElementById('viewMode').style.display = isEdit ? 'none' : 'block';
-    document.getElementById('editMode').style.display = isEdit ? 'block' : 'none';
-    if(isEdit) {
-        const saved = JSON.parse(localStorage.getItem(selectedDate));
-        document.getElementById('textInput').value = saved ? saved.text : "";
-        document.getElementById('editDateDisplay').innerText = selectedDate + " 기록하기";
-    }
+/* 모바일 전용 디자인 */
+@media (max-width: 768px) {
+    .outer-border { padding: 0; }
+    .main-layout { flex-direction: column; overflow-y: auto; }
+    .side-bar { width: 100%; padding: 20px; border-right: none; border-bottom: 1.5px solid var(--main-purple); }
+    .calendar-content { padding: 10px; }
+    .calendar-grid { gap: 4px; }
+    .day-number { font-size: 0.75rem; }
 }
